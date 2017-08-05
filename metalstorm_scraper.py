@@ -140,11 +140,7 @@ def process_band_pages():
         for br in reader:
             if len(br) is 0:
                 break
-            dt = datetime.now()
             driver.get(br[1])
-            delta = datetime.now() - dt
-            logger.info(delta)
-            driver.save_screenshot("1.png")
             get_band_details()
             get_band_lineup()
             get_album_links()
