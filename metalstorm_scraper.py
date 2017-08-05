@@ -1,13 +1,13 @@
 import csv
 import logging
 import os
-import sys
 import re
+import sys
 from datetime import datetime
-from os import mkdir
-
 
 from selenium import webdriver
+
+# for python2 use encode("utf-8") for text
 
 logger = logging.getLogger("wscrapper")
 logger.setLevel(logging.DEBUG)
@@ -36,7 +36,7 @@ def get_bands_links():
     with open(band_links, 'w') as f:
         writer = csv.writer(f)
         for band in bands:
-            row = [band.text.encode("utf-8"), band.get_attribute('href')]
+            row = [band.text, band.get_attribute('href')]
             writer.writerow(row)
             logger.info("add band_link %s", row)
 
@@ -54,7 +54,7 @@ def get_band_details():
         ]:
             for detail in driver.find_elements_by_xpath(
                     "//table[@class='break-on-xs']//tr[./td/a[contains(@href, '{0}')]]//a".format(band_detail_type[0])):
-                row = [driver.current_url, detail.get_property("textContent").encode("utf-8"),
+                row = [driver.current_url, detail.get_property("textContent"),
                        detail.get_attribute('href'),
                        band_detail_type[1]]
                 writer.writerow(row)
@@ -65,7 +65,7 @@ def get_similar_bands():
     with open(similar_bands, 'w') as f:
         writer = csv.writer(f)
         for similar in driver.find_elements_by_css_selector("#similar_bands a[href *= 'band.php']"):
-            row = [driver.current_url, similar.get_property("textContent").encode("utf-8"),
+            row = [driver.current_url, similar.get_property("textContent"),
                    similar.get_attribute('href')]
             writer.writerow(row)
             logger.info("add similar_bands %s", row)
@@ -83,7 +83,7 @@ def get_band_lineup():
         ]:
             for album in driver.find_elements_by_css_selector(
                     "#page-content #{0} a[href *= 'bandmember.php']".format(lineup_type[0])):
-                row = [driver.current_url, album.get_property("textContent").encode("utf-8"),
+                row = [driver.current_url, album.get_property("textContent"),
                        album.get_attribute('href'),
                        lineup_type[1]]
                 writer.writerow(row)
@@ -100,7 +100,7 @@ def get_album_links():
         ]:
             for album in driver.find_elements_by_css_selector(
                     "#page-content #{0} a[href *= 'album.php']".format(album_type[0])):
-                row = [driver.current_url, album.get_property("textContent").encode("utf-8"),
+                row = [driver.current_url, album.get_property("textContent"),
                        album.get_attribute('href'),
                        album_type[1]]
                 writer.writerow(row)
@@ -122,7 +122,7 @@ def get_album_details():
                 p = 'textContent'
                 if album_details_type[1] == 'cover':
                     p = 'src'
-                val = album.get_property(p).encode("utf-8")
+                val = album.get_property(p)
                 if album_details_type[1] == 'votes_num':
                     val = re.search('\d+', str(val)).group()
                 row = [driver.current_url, val, album_details_type[1]]
