@@ -161,7 +161,7 @@ def process_album_pages():
             logger.info('complete album page processing [%s/%s]', album_processed, album_count)
 
 
-# get_bands_links()
+get_bands_links()
 process_band_pages()
 process_album_pages()
 
