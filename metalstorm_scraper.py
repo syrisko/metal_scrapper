@@ -1,8 +1,12 @@
 import csv
 import logging
+import os
 import sys
 import re
 from datetime import datetime
+from os import mkdir
+
+
 from selenium import webdriver
 
 logger = logging.getLogger("wscrapper")
@@ -16,12 +20,13 @@ driver.maximize_window()
 curr_date = datetime.now().strftime("%Y-%m-%d")
 
 # files
-band_links = "band_links_{0}.csv".format(curr_date)
-band_details = "band_details_{0}.csv".format(curr_date)
-album_links = "album_links_{0}.csv".format(curr_date)
-album_details = "album_details_{0}.csv".format(curr_date)
-member_links = "member_links_{0}.csv".format(curr_date)
-similar_bands = "similar_bands_{0}.csv".format(curr_date)
+os.makedirs(curr_date, exist_ok=True)
+band_links = "./{0}/band_links.csv".format(curr_date)
+band_details = "./{0}/band_details.csv".format(curr_date)
+album_links = "./{0}/album_links.csv".format(curr_date)
+album_details = "./{0}/album_details.csv".format(curr_date)
+member_links = "./{0}/member_links.csv".format(curr_date)
+similar_bands = "./{0}/similar_bands.csv".format(curr_date)
 
 
 # should run first
@@ -157,7 +162,7 @@ def process_album_pages():
 
 
 # get_bands_links()
-# process_band_pages()
+process_band_pages()
 process_album_pages()
 
 driver.close()
