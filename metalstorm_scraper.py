@@ -15,7 +15,8 @@ ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
-driver = webdriver.PhantomJS()
+options = ['--load-images=false', '--disk-cache=true']
+driver = webdriver.PhantomJS(service_log_path=os.path.devnull, service_args=options)
 driver.maximize_window()
 curr_date = datetime.now().strftime("%Y-%m-%d")
 
@@ -33,16 +34,16 @@ similar_bands = "./{0}/similar_bands.csv".format(curr_date)
 def get_bands_links():
     driver.get("http://metalstorm.net/bands/index2.php")
     bands = driver.find_elements_by_css_selector('#page-content table a')
-    with open(band_links, 'w') as f:
+    with open(band_links, 'a') as f:
         writer = csv.writer(f)
         for band in bands:
             row = [band.text, band.get_attribute('href')]
             writer.writerow(row)
-            logger.info("add band_link %s", row)
+            logger.info("[%s] add band_link %s", datetime.now(), row)
 
 
 def get_band_details():
-    with open(band_details, 'w') as f:
+    with open(band_details, 'a') as f:
         writer = csv.writer(f)
         for band_detail_type in [
             ("country", "country"),
@@ -50,7 +51,7 @@ def get_band_details():
             ("label", "labels"),
             ("year_formed", "former_in"),
             ("year_disbanded", "disbanded_in"),
-            ("style", "style")
+            # ("style", "style")
         ]:
             for detail in driver.find_elements_by_xpath(
                     "//table[@class='break-on-xs']//tr[./td/a[contains(@href, '{0}')]]//a".format(band_detail_type[0])):
@@ -58,21 +59,21 @@ def get_band_details():
                        detail.get_attribute('href'),
                        band_detail_type[1]]
                 writer.writerow(row)
-                logger.info("add band_detail %s", row)
+                logger.info("[%s] add band_detail %s", datetime.now(), row)
 
 
 def get_similar_bands():
-    with open(similar_bands, 'w') as f:
+    with open(similar_bands, 'a') as f:
         writer = csv.writer(f)
         for similar in driver.find_elements_by_css_selector("#similar_bands a[href *= 'band.php']"):
             row = [driver.current_url, similar.get_property("textContent"),
                    similar.get_attribute('href')]
             writer.writerow(row)
-            logger.info("add similar_bands %s", row)
+            logger.info("[%s] add similar_bands %s", datetime.now(), row)
 
 
 def get_band_lineup():
-    with open(member_links, 'w') as f:
+    with open(member_links, 'a') as f:
         writer = csv.writer(f)
         for lineup_type in [
             ("lineuptab0", "current members"),
@@ -87,11 +88,11 @@ def get_band_lineup():
                        album.get_attribute('href'),
                        lineup_type[1]]
                 writer.writerow(row)
-                logger.info("add member_link %s", row)
+                logger.info("[%s] add member_link %s", datetime.now(), row)
 
 
 def get_album_links():
-    with open(album_links, 'w') as f:
+    with open(album_links, 'a') as f:
         writer = csv.writer(f)
         for album_type in [
             ("discotab1", "album"),
@@ -104,17 +105,17 @@ def get_album_links():
                        album.get_attribute('href'),
                        album_type[1]]
                 writer.writerow(row)
-                logger.info("add album_link %s", row)
+                logger.info("[%s] add album_link %s", datetime.now(), row)
 
 
 def get_album_details():
-    with open(album_details, 'w') as f:
+    with open(album_details, 'a') as f:
         writer = csv.writer(f)
         for album_details_type in [
             ("//tr[contains(.,'Release date')]/td[2]", "release_date"),
             ("//tr[contains(.,'Style')]/td[2]", "style"),
             ("//*[contains(@class,'discography-album')]//*[contains(@class,'left-col')]//img", "cover"),
-            ("//*[contains(@class,'discography-album')]//*[contains(@id,'tracks')]", "tracks"),
+            # ("//*[contains(@class,'discography-album')]//*[contains(@id,'tracks')]", "tracks"),
             ("//*[contains(@class,'album-rating')]//*[contains(@class,'megarating')]", "rating"),
             ("//*[contains(@class,'album-rating')]//*[contains(@class,'votes_num')]", "votes_num")
         ]:
@@ -127,7 +128,7 @@ def get_album_details():
                     val = re.search('\d+', str(val)).group()
                 row = [driver.current_url, val, album_details_type[1]]
                 writer.writerow(row)
-                logger.info("add album_details %s", row)
+                logger.info("[%s] add album_details %s", datetime.now(), row)
 
 
 def process_band_pages():
@@ -139,7 +140,11 @@ def process_band_pages():
         for br in reader:
             if len(br) is 0:
                 break
+            dt = datetime.now()
             driver.get(br[1])
+            delta = datetime.now() - dt
+            logger.info(delta)
+            driver.save_screenshot("1.png")
             get_band_details()
             get_band_lineup()
             get_album_links()
