@@ -23,9 +23,8 @@ album_details = "album_details_{0}.csv".format(curr_date)
 member_links = "member_links_{0}.csv".format(curr_date)
 similar_bands = "similar_bands_{0}.csv".format(curr_date)
 
-logger.info("start")
 
-
+# should run first
 def get_bands_links():
     driver.get("http://metalstorm.net/bands/index2.php")
     bands = driver.find_elements_by_css_selector('#page-content table a')
@@ -128,30 +127,37 @@ def get_album_details():
 
 def process_band_pages():
     with open(band_links, 'r') as b:
+        band_count = sum(1 for _ in b)
+    with open(band_links, 'r') as b:
+        bands_processed = 0
         reader = csv.reader(b)
         for br in reader:
+            if len(br) is 0:
+                break
             driver.get(br[1])
-            # get_bands_links()
             get_band_details()
             get_band_lineup()
             get_album_links()
             get_similar_bands()
+            bands_processed += 1
+            logger.info('complete band page processing [%s/%s]', bands_processed, band_count)
 
 
 def process_album_pages():
     with open(album_links, 'r') as f:
+        album_count = sum(1 for _ in f)
+    with open(album_links, 'r') as f:
+        album_processed = 0
         reader = csv.reader(f)
         for line in reader:
             driver.get(line[2])
             get_album_details()
+            album_processed += 1
+            logger.info('complete album page processing [%s/%s]', album_processed, album_count)
 
 
-def init():
-    driver.get("http://metalstorm.net/bands/index2.php")
-
-
-init()
-process_band_pages()
+# get_bands_links()
+# process_band_pages()
 process_album_pages()
 
 driver.close()
